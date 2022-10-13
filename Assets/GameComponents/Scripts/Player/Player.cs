@@ -6,7 +6,7 @@ using UnityEngine.Events;
 public class Player : MonoBehaviour
 {
     [SerializeField]
-    private UnityEvent<float> HealthChanged;
+    public UnityAction<float> HealthChanged;
 
     [SerializeField]
     private SpriteRenderer _spriteRenderer;
@@ -57,7 +57,7 @@ public class Player : MonoBehaviour
         DetermineNormalizedCountOfHealth();
         SetNewColor();
 
-        HealthChanged.Invoke(_normalizedCountOfHealth);
+        HealthChanged?.Invoke(_normalizedCountOfHealth);
     }
 
     private void DetermineNormalizedCountOfHealth()

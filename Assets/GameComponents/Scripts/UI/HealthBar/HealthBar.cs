@@ -5,7 +5,13 @@ using System.Collections;
 public class HealthBar : MonoBehaviour
 {
     [SerializeField]
+    private Player _player;
+
+    [SerializeField]
     private Slider _slider;
+
+    [SerializeField]
+    private Image _sliderFillRectangle;
 
     [SerializeField]
     private float _smoothingChangingValue;
@@ -13,36 +19,58 @@ public class HealthBar : MonoBehaviour
     [SerializeField]
     private Gradient _gradient;
 
-    private float _targetValue;
+    private Coroutine _coroutineChangeSmoothlySliderValue;
+
+    private void OnEnable()
+    {
+        _player.HealthChanged += SetNewStateHealthBar;
+    }
+
+    private void OnDisable()
+    {
+        _player.HealthChanged -= SetNewStateHealthBar;
+    }
 
     private void Start()
     {
         _slider.value = _slider.maxValue;
+
+        _sliderFillRectangle = _slider.fillRect.GetComponent<Image>();
     }
 
-    public void SetNewState(float normalizedCountOfHealth)
+    private void SetNewStateHealthBar(float normalizedCountOfHealth)
     {
-        SetNewValue(normalizedCountOfHealth);
-        SetNewColor(normalizedCountOfHealth);
+        SetNewSliderValue(normalizedCountOfHealth);
+        SetNewFillColorForSliderRectangle(normalizedCountOfHealth);
     }
 
-    private void SetNewColor(float normalizedValue)
+    private void SetNewFillColorForSliderRectangle(float normalizedValue)
     {
-        _slider.fillRect.GetComponent<Image>().color = _gradient.Evaluate(normalizedValue);
+        _sliderFillRectangle.color = _gradient.Evaluate(normalizedValue);
     }
 
-    private void SetNewValue(float normalizedValue)
+    private void SetNewSliderValue(float normalizedValue)
     {
-        _targetValue = normalizedValue * _slider.maxValue;
+        float targetSliderValue = normalizedValue * _slider.maxValue;
 
-        StartCoroutine(ChangeSmoothlyValue());
+        RestartCoroutineChangeSmoothlyValue(targetSliderValue);
     }
 
-    private IEnumerator ChangeSmoothlyValue()
+    private void RestartCoroutineChangeSmoothlyValue(float targetValue)
     {
-        while (_slider.value != _targetValue)
+        if (_coroutineChangeSmoothlySliderValue != null)
         {
-            _slider.value = Mathf.MoveTowards(_slider.value, _targetValue, _smoothingChangingValue);
+            StopCoroutine(_coroutineChangeSmoothlySliderValue);
+        }
+
+        _coroutineChangeSmoothlySliderValue = StartCoroutine(ChangeSmoothlySliderValue(targetValue));
+    }
+
+    private IEnumerator ChangeSmoothlySliderValue(float targetValue)
+    {
+        while (_slider.value != targetValue)
+        {
+            _slider.value = Mathf.MoveTowards(_slider.value, targetValue, _smoothingChangingValue);
 
             yield return null;
         }
