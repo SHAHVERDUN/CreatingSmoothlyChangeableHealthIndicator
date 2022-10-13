@@ -6,7 +6,7 @@ using UnityEngine.Events;
 public class Player : MonoBehaviour
 {
     [SerializeField]
-    public UnityAction<float> HealthChanged;
+    public event UnityAction<float> HealthChanged;
 
     [SerializeField]
     private SpriteRenderer _spriteRenderer;
